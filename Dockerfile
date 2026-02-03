@@ -39,10 +39,10 @@ RUN pip install --no-cache-dir --timeout 300 \
 # Install other requirements
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Clone and install ACE-Step
+# Clone ACE-Step and install using uv (handles local nano-vllm dependency)
 RUN git clone https://github.com/ace-step/ACE-Step-1.5.git /tmp/acestep && \
     cd /tmp/acestep && \
-    pip install --no-cache-dir -e . && \
+    uv pip install --system --no-cache . && \
     rm -rf /tmp/acestep/.git
 
 # -----------------------------------------------------------------------------
