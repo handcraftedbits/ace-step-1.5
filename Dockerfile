@@ -30,8 +30,8 @@ COPY requirements.txt .
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install PyTorch with CUDA support
-RUN pip install --no-cache-dir \
+# Install PyTorch with CUDA support (with extended timeout for large downloads)
+RUN pip install --no-cache-dir --timeout 300 \
     torch==2.2.0 \
     torchaudio==2.2.0 \
     --index-url https://download.pytorch.org/whl/cu121
@@ -52,18 +52,22 @@ FROM python:3.11-slim as model-downloader
 
 WORKDIR /models
 
-# Install huggingface-cli
-RUN pip install --no-cache-dir huggingface-hub
+# Install huggingface-hub with hf_transfer for faster downloads
+RUN pip install --no-cache-dir "huggingface-hub[cli,hf_transfer]"
+
+# Enable fast transfers
+ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
 # Download main model package (includes VAE, Qwen3-Embedding, acestep-v15-turbo, acestep-5Hz-lm-1.7B)
-RUN huggingface-cli download ACE-Step/Ace-Step1.5 --local-dir /models/checkpoints
+# Use python -m to ensure we find the installed package
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/Ace-Step1.5', local_dir='/models/checkpoints')"
 
 # Optional: Download additional LM models (uncomment if needed)
-# RUN huggingface-cli download ACE-Step/acestep-5Hz-lm-0.6B --local-dir /models/checkpoints/acestep-5Hz-lm-0.6B
-# RUN huggingface-cli download ACE-Step/acestep-5Hz-lm-4B --local-dir /models/checkpoints/acestep-5Hz-lm-4B
+# RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-0.6B', local_dir='/models/checkpoints/acestep-5Hz-lm-0.6B')"
+# RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-4B', local_dir='/models/checkpoints/acestep-5Hz-lm-4B')"
 
 # Optional: Download additional DiT models (uncomment if needed)
-# RUN huggingface-cli download ACE-Step/acestep-v15-turbo-shift3 --local-dir /models/checkpoints/acestep-v15-turbo-shift3
+# RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-turbo-shift3', local_dir='/models/checkpoints/acestep-v15-turbo-shift3')"
 
 # -----------------------------------------------------------------------------
 # Stage 3: Runtime - Minimal image for running the application
