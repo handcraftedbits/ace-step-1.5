@@ -100,8 +100,7 @@ COPY --from=builder /opt/venv /opt/venv
 # Copy models from model-downloader stage
 COPY --from=model-downloader /models/checkpoints /app/checkpoints
 
-# Copy application code
-COPY main.py .
+# No custom application code needed - using ACE-Step's built-in API server
 
 # Create output directory
 RUN mkdir -p /app/outputs
@@ -118,5 +117,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-# Run the application
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run ACE-Step's built-in API server
+CMD ["acestep-api", "--host", "0.0.0.0", "--port", "8000"]
