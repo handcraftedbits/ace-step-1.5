@@ -110,9 +110,10 @@ COPY --from=model-downloader /models/checkpoints /app/checkpoints
 # Create output directory
 RUN mkdir -p /app/outputs
 
-# Create non-root user for security
+# Create non-root user for security and set permissions
 RUN useradd --create-home --shell /bin/bash appuser && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appuser /app && \
+    chown -R appuser:appuser /opt/venv
 USER appuser
 
 # Expose port
