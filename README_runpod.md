@@ -49,9 +49,9 @@ curl -X POST http://<POD_IP>:8000/query_result \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ACESTEP_DIT_CONFIG` | `acestep-v15-turbo` | DiT model (turbo for faster generation) |
-| `ACESTEP_LM_MODEL` | `acestep-5Hz-lm-1.7B` | Language model size |
-| `PORT` | `8000` | API server port |
+| `ACESTEP_CONFIG_PATH` | `/app/checkpoints/acestep-v15-base` | Full path to DiT model |
+| `ACESTEP_LM_MODEL_PATH` | `/app/checkpoints/acestep-5Hz-lm-1.7B` | Full path to LM model |
+| `ACESTEP_API_PORT` | `8000` | API server port |
 
 ## GPU Requirements
 

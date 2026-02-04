@@ -55,14 +55,13 @@ See the [ACE-Step API documentation](https://github.com/ace-step/ACE-Step-1.5/bl
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ACESTEP_CHECKPOINT_DIR` | `/app/checkpoints` | Model checkpoints directory |
+| `ACESTEP_CONFIG_PATH` | `/app/checkpoints/acestep-v15-base` | Full path to DiT model |
+| `ACESTEP_LM_MODEL_PATH` | `/app/checkpoints/acestep-5Hz-lm-1.7B` | Full path to LM model |
 | `ACESTEP_OUTPUT_DIR` | `/app/outputs` | Generated audio output directory |
 | `ACESTEP_DEVICE` | `cuda` | Device (cuda, cpu, mps) |
-| `ACESTEP_DIT_CONFIG` | `acestep-v15-turbo` | DiT model configuration |
-| `ACESTEP_LM_MODEL` | `acestep-5Hz-lm-1.7B` | Language model |
-| `ACESTEP_LM_BACKEND` | `vllm` | LLM backend (vllm, transformers) |
-| `HOST` | `0.0.0.0` | Server host |
-| `PORT` | `8000` | Server port |
+| `ACESTEP_LM_BACKEND` | `pt` | LLM backend (vllm, pt) |
+| `ACESTEP_API_HOST` | `0.0.0.0` | Server host |
+| `ACESTEP_API_PORT` | `8000` | Server port |
 
 ## License
 

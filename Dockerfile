@@ -50,9 +50,13 @@ RUN pip install --no-cache-dir "huggingface-hub[cli,hf_transfer]"
 # Enable fast transfers
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
-# Download main model package (includes VAE, Qwen3-Embedding, acestep-v15-turbo, acestep-5Hz-lm-1.7B)
+# Download main model package (includes VAE, Qwen3-Embedding, acestep-5Hz-lm-1.7B)
 # Uses HF_TOKEN for authentication with gated repos
-RUN python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/Ace-Step1.5', local_dir='/models/checkpoints', token=os.environ.get('HF_TOKEN'))"
+# Exclude acestep-v15-turbo since we use acestep-v15-base instead
+RUN python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/Ace-Step1.5', local_dir='/models/checkpoints', token=os.environ.get('HF_TOKEN'), ignore_patterns=['acestep-v15-turbo/*'])"
+
+# Download acestep-v15-base as the primary DiT model
+RUN python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-base', local_dir='/models/checkpoints/acestep-v15-base', token=os.environ.get('HF_TOKEN'))"
 
 # Optional: Download additional LM models (uncomment if needed)
 # RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-0.6B', local_dir='/models/checkpoints/acestep-5Hz-lm-0.6B')"
@@ -73,16 +77,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
     # ACE-Step configuration
     ACESTEP_PROJECT_ROOT=/app \
-    ACESTEP_CHECKPOINT_DIR=/app/checkpoints \
     ACESTEP_OUTPUT_DIR=/app/outputs \
     ACESTEP_TMPDIR=/app/outputs \
     ACESTEP_DEVICE=cuda \
-    ACESTEP_DIT_CONFIG=acestep-v15-turbo \
-    ACESTEP_LM_MODEL=acestep-5Hz-lm-1.7B \
+    # ACE-Step API model paths (full paths to pre-baked models)
+    ACESTEP_CONFIG_PATH=/app/checkpoints/acestep-v15-base \
+    ACESTEP_LM_MODEL_PATH=/app/checkpoints/acestep-5Hz-lm-1.7B \
     ACESTEP_LM_BACKEND=pt \
     # Server configuration
-    HOST=0.0.0.0 \
-    PORT=8000
+    ACESTEP_API_HOST=0.0.0.0 \
+    ACESTEP_API_PORT=8000
 
 WORKDIR /app
 
