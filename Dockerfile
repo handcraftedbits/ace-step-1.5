@@ -92,9 +92,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Create non-root user first (before copying large files)
-RUN useradd --create-home --shell /bin/bash appuser
-
 # Install runtime dependencies (including gcc for triton/vllm JIT compilation)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 \
@@ -105,26 +102,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf /usr/bin/python3.11 /usr/bin/python
 
-# Copy virtual environment from builder with correct ownership (no extra layer)
-COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
 
 # Fix venv Python symlink to point to runtime Python
 RUN ln -sf /usr/bin/python3.11 /opt/venv/bin/python && \
     ln -sf /usr/bin/python3.11 /opt/venv/bin/python3 && \
     ln -sf /usr/bin/python3.11 /opt/venv/bin/python3.11
 
-# Copy models from model-downloader stage with correct ownership
-COPY --from=model-downloader --chown=appuser:appuser /models/checkpoints /app/checkpoints
+# Copy models from model-downloader stage
+COPY --from=model-downloader /models/checkpoints /app/checkpoints
 
 # Copy startup script
-COPY --chown=appuser:appuser start.sh /app/start.sh
+COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# Create output and cache directories with correct ownership
-RUN mkdir -p /app/outputs /app/.cache/triton /app/.cache/torchinductor && \
-    chown -R appuser:appuser /app/outputs /app/.cache
-
-USER appuser
+# Create output and cache directories
+RUN mkdir -p /app/outputs /app/.cache/triton /app/.cache/torchinductor
 
 # Expose ports (8000 for API, 7860 for Gradio UI)
 EXPOSE 8000 7860
