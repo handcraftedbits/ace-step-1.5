@@ -29,13 +29,14 @@ RUN python -c "import os; from huggingface_hub import snapshot_download; snapsho
 
 # Download acestep-v15-base as the primary DiT model
 RUN python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-base', local_dir='/models/checkpoints/acestep-v15-base', token=os.environ.get('HF_TOKEN'))"
+RUN python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-turbo', local_dir='/models/checkpoints/acestep-v15-turbo', token=os.environ.get('HF_TOKEN'))"
 
 # Optional: Download additional LM models (uncomment if needed)
-# RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-0.6B', local_dir='/models/checkpoints/acestep-5Hz-lm-0.6B')"
-# RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-4B', local_dir='/models/checkpoints/acestep-5Hz-lm-4B')"
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-0.6B', local_dir='/models/checkpoints/acestep-5Hz-lm-0.6B')"
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-4B', local_dir='/models/checkpoints/acestep-5Hz-lm-4B')"
 
 # Optional: Download additional DiT models (uncomment if needed)
-# RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-turbo-shift3', local_dir='/models/checkpoints/acestep-v15-turbo-shift3')"
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-turbo-shift3', local_dir='/models/checkpoints/acestep-v15-turbo-shift3')"
 
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime - Install ACE-Step and run from /app
@@ -67,6 +68,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     git \
     curl \
+    wget \
+    vim \
     build-essential \
     libsndfile1 \
     ffmpeg \
@@ -79,7 +82,7 @@ ENV PATH="/root/.local/bin:$PATH"
 
 # Clone ACE-Step directly into /app and install
 RUN git clone https://github.com/ace-step/ACE-Step-1.5.git /app && \
-    rm -rf /app/.git && \
+    #rm -rf /app/.git && \
     uv pip install --system --no-cache .
 
 # Create symlink so ACE-Step's model discovery finds /app/checkpoints
@@ -101,11 +104,12 @@ RUN chmod +x /app/start.sh
 RUN mkdir -p /app/outputs
 
 # Expose ports (8000 for API, 7860 for Gradio UI)
-EXPOSE 8000 7860
+#EXPOSE 8000 7860
+EXPOSE 7860
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/health')" || exit 1
 
 # Run both API server and Gradio UI
 CMD ["/app/start.sh"]
