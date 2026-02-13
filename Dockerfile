@@ -29,14 +29,13 @@ RUN python -c "import os; from huggingface_hub import snapshot_download; snapsho
 
 # Download acestep-v15-base as the primary DiT model
 RUN python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-base', local_dir='/models/checkpoints/acestep-v15-base', token=os.environ.get('HF_TOKEN'))"
-RUN python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-turbo', local_dir='/models/checkpoints/acestep-v15-turbo', token=os.environ.get('HF_TOKEN'))"
 
 # Optional: Download additional LM models (uncomment if needed)
 RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-0.6B', local_dir='/models/checkpoints/acestep-5Hz-lm-0.6B')"
 RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-5Hz-lm-4B', local_dir='/models/checkpoints/acestep-5Hz-lm-4B')"
 
 # Optional: Download additional DiT models (uncomment if needed)
-RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-turbo-shift3', local_dir='/models/checkpoints/acestep-v15-turbo-shift3')"
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('ACE-Step/acestep-v15-sft', local_dir='/models/checkpoints/acestep-v15-sft')"
 
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime - Install ACE-Step and run from /app
@@ -102,6 +101,12 @@ RUN chmod +x /app/start.sh
 
 # Create output directory
 RUN mkdir -p /app/outputs
+
+# Side-step
+RUN git clone https://github.com/koda-dernet/Side-Step.git sidestep \
+    ln -sf /app/sidestep/acestep/training_v2/ /app/acestep/training_v2 \
+    ln -sf /app/sidestep/*.py /app \
+    python -m pip install -r /app/sidestep/requirements-sidestep.txt
 
 # Expose ports (8000 for API, 7860 for Gradio UI)
 #EXPOSE 8000 7860
